@@ -1,0 +1,229 @@
+Regressionsanalys av Försäkringskostnader 
+
+1. Inledning 
+
+Målet med denna analys är att undersöka vilka faktorer som påverkar försäkringskostnader (charges) och 
+att jämföra två regressionsmodeller för att bedöma vilken som är mest lämplig.
+Denna rapport presenterar data, metod, analysresultat och residualdiagnostik. 
+
+2. Data och variabler 
+
+Datasetet består av 1002 observationer efter borttagning av rader med saknade värden.
+Följande variabler ingår i analysen:
+
+age
+sex
+bmi
+smoker
+children
+history_risk
+plan_type
+chronic_condition
+annual_checkups
+charges (beroende variabel)
+
+2.1 Skapade variabler och motivering
+För att förbättra analysens kvalitet och öka modellens tolkbarhet skapades tre nya variabler: 
+BMI‑kategori, age_group och history_risk. Dessa variabler gör det möjligt att identifiera mönster och 
+skillnader som inte framgår lika tydligt när man använder enbart de ursprungliga kontinuerliga variablerna.
+BMI‑kategori grupperar individer enligt etablerade BMI‑gränser (t.ex. undervikt, normalvikt, övervikt och fetma).
+Denna indelning används ofta inom vård och försäkringsbranschen för att bedöma hälsorisker och gör det lättare 
+att analysera skillnader i kostnader mellan tydliga riskgrupper.
+age_group skapar åldersintervall som 0–25, 26–40, 41–60 och 60+. Eftersom ålder påverkar risk och hälsokostnader 
+på ett icke‑linjärt sätt möjliggör åldersgrupper tydligare jämförelser mellan yngre och äldre kunder.
+history_risk kombinerar tidigare olyckor och tidigare försäkringsclaims till en sammanvägd riskindikator. 
+Detta ger en mer representativ bild av kundens historiska riskbeteende och underlättar analysen av hur riskprofilen 
+påverkar försäkringskostnaderna.
+Sammanfattningsvis gör dessa nya variabler analysen mer robust, lättare att tolka och bättre anpassad efter hur 
+försäkringsbolag arbetar med riskbedömning i praktiken.
+
+3. Metod 
+
+Analysen genomfördes i R och består av flera steg: dataförståelse, datastädning, beskrivande analys samt 
+regressionsmodellering. Målet är att undersöka vilka faktorer som påverkar försäkringskostnader (charges) 
+och att utvärdera hur väl regressionsmodeller kan användas som beslutsstöd i prissättning.
+
+3.1 Databearbetning
+Datasetet lästes in och undersöktes med avseende på struktur, variabeltyper och saknade värden. 
+Kategoriska variabler omvandlades till faktorer, och nya variabler skapades för att fånga viktiga 
+riskdimensioner (BMI‑kategori, åldersgrupper och history_risk). Därefter skapades ett komplett dataset 
+genom att ta bort rader med saknade värden för de variabler som ingick i modellerna.
+
+3.2 Beskrivande analys
+För att få en första förståelse av datats mönster och variation gjordes visualiseringar av bland annat 
+fördelningen av försäkringskostnader, skillnader mellan rökare och icke‑rökare samt sambandet mellan BMI 
+och kostnad. Dessa figurer användes för att identifiera vilka variabler som kunde tänkas ha starkast 
+samband med målvariabeln.
+
+3.3 Regressionsmodeller
+Två linjära regressionsmodeller konstruerades:
+
+Modell 1: Innehåller demografiska och grundläggande livsstilsvariabler (age, sex, bmi, smoker, children).
+Modell 2: Utökar Modell 1 med medicinska och beteendemässiga prediktorer (history_risk, plan_type, 
+chronic_condition, annual_checkups).
+
+Syftet är att jämföra en enklare modell med en mer komplett riskprofilmodell.
+
+3.4 Modelljämförelse
+Modellerna jämfördes med hjälp av AIC och BIC för att bedöma vilken modell som ger bäst balans mellan 
+förklaringsgrad och komplexitet. En lägre AIC/BIC indikerar en mer lämplig modell.
+
+3.5 Modellvalidering
+Residualdiagnostik genomfördes för att säkerställa att regressionsantagandena uppfylls. 
+Detta inkluderade:
+
+analys av residualplots (linjäritet och varians)
+QQ‑plot och Shapiro‑Wilk‑test (normalitet)
+Breusch–Pagan‑test (homoskedasticitet)
+VIF‑värden (multikollinearitet)
+Cook’s Distance (påverkande observationer)
+
+Denna validering säkerställer att modellerna är statistiskt tillförlitliga och lämpliga att tolka.
+
+Valet av prediktorer baseras både på teoretisk relevans och resultat från den beskrivande analysen. 
+Demografiska variabler som ålder, kön, BMI, antal barn och rökstatus ingår i Modell 1 då dessa faktorer är 
+välkända drivkrafter för försäkringskostnader i både forskning och praktisk försäkringsverksamhet. Den 
+beskrivande analysen visade också tydliga skillnader mellan grupper, exempelvis att rökare har högre 
+försäkringskostnader och att högre BMI tenderar att vara kopplat till ökade kostnader. Dessa variabler är 
+därför logiskt och empiriskt motiverade som grundläggande prediktorer.
+Modell 2 utökar prediktoruppsättningen genom att inkludera history_risk, plan_type, chronic_condition och s. 
+Dessa variabler representerar mer detaljerad medicinsk och beteendemässig information och reflekterar 
+faktorer som försäkringsbolag vanligtvis använder vid riskbedömning.
+
+history_risk fångar kundens tidigare skadebeteende och är därför en direkt indikator på framtida 
+kostnadsrisk.
+plan_type kan påverka både användning av vårdtjänster och kostnadsnivå beroende på självrisks- och 
+täckningsgrad.
+chronic_condition är en central hälsofaktor som logiskt påverkar medicinska utgifter.
+annual_checkups fungerar som en indikator på vårdkonsumtion och generellt hälsobeteende.
+
+Tillsammans möjliggör dessa variabler en mer heltäckande beskrivning av individuella riskprofiler.
+Jämförelsen mellan modellerna baserades på AIC och BIC, där Modell 2 uppvisade lägre värden än Modell 1,
+vilket innebär att den ger en bättre balans mellan modellens förklaringsförmåga och dess komplexitet. Den 
+ökade förklaringsgraden i Modell 2 är teoretiskt rimlig eftersom de tillagda variablerna bidrar med viktig 
+informationsrikedom kring individers hälsotillstånd och tidigare riskmönster. Dessutom visade residualdiagnostiken 
+att Modell 2 uppfyllde regressionsantagandena, vilket stärker dess trovärdighet.
+Sammantaget framstår Modell 2 som den mest lämpliga modellen eftersom den bättre fångar variationen i 
+försäkringskostnader och ger mer realistiska och praktiskt användbara insikter för försäkringsbolagets 
+riskbedömning och prissättningsstrategi.
+
+4. Beskrivande analys
+Den beskrivande analysen genomfördes för att få en övergripande förståelse av datasetet och identifiera 
+mönster som kan vara relevanta för vidare modellering. Analysen inkluderar fyra visualiseringar och tillhörande
+tolkningar som tillsammans belyser hur försäkringskostnaderna varierar mellan olika grupper och riskfaktor
+
+
+4.1 Fördelningen av försäkringskostnader (charges)
+Histogrammet visar att försäkringskostnaderna är tydligt högerskev. Majoriteten av observationerna ligger 
+till medelhöga nivåer, medan en mindre grupp har betydligt högre kostnader. Denna skevhet är typisk inom 
+hälso- och försäkringsdata och indikerar att en liten del av kunderna står för mycket höga kostnader. 
+Detta motiverar användningen av residualdiagnostik då skevheten kan påverka modellens antaganden.
+
+4.2 Skillnader mellan rökare och icke‑rökare
+Boxploten för smoker visar tydliga skillnader i försäkringskostnader mellan grupperna. Rökare har både 
+högre medianer och större variation, vilket tyder på att rökning är en stark riskfaktor som driver upp 
+kostnader. Detta gör variabeln mycket relevant att inkludera i regressionsmodellen.
+
+4.3 Samband mellan BMI och försäkringskostnader
+Scatterploten visar en positiv trend mellan BMI och försäkringskostnader. Även om datapunkterna är spridda 
+finns ett tydligt mönster där högre BMI tenderar att ge högre kostnader. Detta överensstämmer med tidigare 
+forskning där övervikt och fetma är kopplat till ökad sjuklighet. Variabeln har därför både statistisk och 
+relevans.
+
+4.4 Fördelning av historisk risk (history_risk)
+Histogrammet över history_risk visar att de flesta individer har mycket få tidigare incidents eller claims, 
+medan en liten andel har högre värden. Detta innebär att variabeln är snedfördelad men fortfarande mycket 
+informativ, då historisk risk är centralt inom försäkringsprissättning. Variabeln bedöms därför som värdefull 
+att inkludera i den utökade modellen.
+
+4. Modell 1 
+
+Modell 1 inkluderar följande prediktorer: age, sex, bmi, smoker och children. 
+Resultatet visar vilka variabler som är signifikanta och hur väl modellen förklarar variation i 
+försäkringskostnaderna. 
+
+5. Modell 2 
+
+Modell 2 utökar Modell 1 genom att inkludera history_risk, plan_type, chronic_condition och annual_checkups. 
+Denna modell syftar till att förbättra förklaringsgraden genom att lägga till mer medicinsk information. 
+
+6. Modelljämförelse (AIC/BIC) 
+
+Modellerna jämförs med hjälp av AIC och BIC. Den modell som har lägst värden anses mest lämpad. 
+I denna analys visar Modell 2 bättre prestanda än Modell 1. 
+
+7. Residualdiagnostik 
+
+Residualdiagnostiken visar att modellen uppfyller regressionsantagandena. 
+Nedan sammanfattas resultaten. 
+
+7.1 Normalitet 
+
+Shapiro–Wilk-testet indikerade avvikelse från normalitet (p < 0.05). 
+Vid stora datamängder är detta förväntat. QQ-plot visar dock endast mindre avvikelser i svansarna, 
+vilket inte påverkar modellens användbarhet. 
+
+7.2 Homoskedasticitet 
+
+Breusch–Pagan-testet gav p-värde = 0.5489 (> 0.05), vilket innebär att residualerna har konstant varians.
+Modellen uppfyller därmed antagandet om homoskedasticitet. 
+
+7.3 Multikollinearitet 
+
+VIF-värdena ligger mellan 1.00 och 1.13, vilket visar att ingen multikollinearitet förekommer mellan 
+prediktorerna. 
+
+7.4 Influential Points 
+
+Cook’s Distance-grafen visar endast ett fåtal punkter över tröskelvärdet. Dessa påverkar inte modellens 
+stabilitet i någon större utsträckning. 
+
+8. Diskussion 
+
+Resultaten från regressionsanalysen visar att Modell 2 ger den bästa förklaringsgraden och därmed är mest 
+lämplig för att analysera försäkringskostnader. Det är tydligt att variabler som BMI, rökstatus och kroniska 
+sjukdomar har en betydande påverkan på kostnaderna, vilket överensstämmer med hur försäkringsrisker vanligtvis 
+bedöms i verkligheten. Dessa resultat är därför rimliga både statistiskt och praktiskt.
+Det är dock viktigt att tolka resultaten med viss försiktighet. Även om residualdiagnostiken bekräftar att 
+modellens antaganden till stor del är uppfyllda – inklusive homoskedasticitet och avsaknad av multikollinearitet 
+– bör man beakta att datasetet endast representerar ett specifikt urval av individer. Det är möjligt att 
+andra variabler, som inte ingår i modellen men som kan vara relevanta för hälsokostnader (t.ex. socioekonomisk 
+status, livsstilsfaktorer eller genetiska predispositioner), skulle kunna förbättra modellen ytterligare om 
+de fanns tillgängliga. Avvikelser från normalfördelning i residualerna påpekades av Shapiro–Wilk-testet, 
+men dessa bedöms inte påverka modellens validitet eftersom stickprovet är stort och regression är robust 
+mot mindre normalitetsavvikelser. Cook’s Distance indikerade ett fåtal observationer med påverkan, 
+men inga av dessa var så extrema att de motiverar att tas bort. Modellen bedöms därför vara stabil och 
+rimligt generaliserbar inom ramen för det tillgängliga datamaterialet.
+
+9. Slutsats 
+
+Analysen visar att Modell 2 är den mest ändamålsenliga och statistiskt tillförlitliga modellen för att 
+förklara variationen i försäkringskostnader. Genom att inkludera både demografiska och medicinska variabler
+uppvisar modellen en högre förklaringsgrad och lägre AIC- och BIC‑värden jämfört med Modell 1. Residualdiagnostiken 
+bekräftar att modellens centrala antaganden är uppfyllda, vilket innebär att skattningarna är stabila och 
+resultaten är robusta. Framför allt framträder BMI, rökstatus och kroniska sjukdomar som betydande prediktorer 
+för ökade kostnader. Sammantaget bedöms modellen vara väl lämpad som underlag för vidare analys och beslutsfattande
+inom områden som riskbedömning och försäkringsprissättning.
+
+10. Sammanfattning
+
+Denna analys undersöker vilka faktorer som påverkar försäkringskostnader genom två linjära regressionsmodeller 
+baserade på ett dataset med 1002 observationer. 
+Modell 1 inkluderade demografiska variabler, medan Modell 2 utökades med medicinska och beteenderelaterade faktorer. 
+Modelljämförelsen visade att Modell 2 hade lägre AIC- och BIC‑värden, vilket gör den mer lämpad för att 
+förklara variationen i försäkringskostnader. Residualdiagnostiken indikerade att modellen uppfyller 
+viktiga regressionsantaganden såsom homoskedasticitet och frånvaro av multikollinearitet, och att endast få 
+observationer hade märkbar påverkan på modellens resultat. Sammantaget är Modell 2 stabil, tillförlitlig och 
+ger en god förståelse för hur faktorer som BMI, rökstatus och kroniska sjukdomar påverkar försäkringskostnader.
+
+11. Reflektion 
+ denna uppgift tycker jag att jag arbetade strukturerat och metodiskt. Jag har varit noggrann med att följa analysprocessen steg för steg, från datastädning och visualiseringar till regressionsmodellering och residualdiagnostik. Det jag gjorde särskilt bra var att jag lyckades hantera datat på ett korrekt sätt, skapa relevanta nya variabler och genomföra en fullständig analys med två modeller som sedan jämfördes med AIC och BIC. Jag är också nöjd med att jag genomförde residualdiagnostik för att säkerställa modellernas giltighet.
+Det svåraste momentet var att hantera felmeddelanden och säkerställa att modellerna byggdes på exakt samma dataset. Det tog tid att förstå varför vissa variabler saknades och hur R hanterade saknade värden, men genom felsökning och omstrukturering av koden löste jag problemet. Även residualdiagnostiken krävde eftertanke för att tolka resultaten korrekt.
+Jag inte bara har gjort grunderna utan även:
+
+jämfört två modeller och motiverat modellvalet,
+diskuterat begränsningar och styrkor,
+genomfört fördjupad residualdiagnostik,
+resonerat kritiskt kring resultatens rimlighet och modellens användbarhet,
+samt strukturerat analysen på ett tydligt och transparent sätt.
+

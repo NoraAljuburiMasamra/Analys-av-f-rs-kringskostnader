@@ -1,0 +1,105 @@
+df <- read_csv("insurance_costs.csv") %>% clean_names()
+glimpse(df)
+
+colSums(is.na(df))
+
+df <- df %>%
+  mutate(
+    sex = factor(sex),
+    region = factor(region),
+    smoker = factor(smoker),
+    chronic_condition = factor(chronic_condition),
+    exercise_level = factor(exercise_level),
+    plan_type = factor(plan_type)
+  )
+
+df <- df %>%
+  mutate(
+    bmi_category = case_when(
+      bmi < 18.5 ~ "underweight",
+      bmi < 25 ~ "normal",
+      bmi < 30 ~ "overweight",
+      TRUE ~ "obese"
+    ),
+    age_group = cut(age, breaks = c(0, 25, 40, 60, 100),
+                    labels = c("0–25", "26–40", "41–60", "60+")),
+    history_risk = prior_accidents + prior_claims
+  )
+
+### Histogram av charges
+ggplot(df, aes(charges)) +
+  geom_histogram(bins = 30, fill = "skyblue") +
+  theme_minimal()
+
+### Boxplot smoker vs charges
+
+ggplot(df, aes(smoker, charges)) +
+  geom_boxplot()
+
+### BMI vs charges
+
+ggplot(df, aes(bmi, charges)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth()
+
+### Riskhistorik
+ggplot(df, aes(history_risk)) +
+  geom_histogram(bins = 20, fill = "orange")
+
+ 
+# BYGG REGRESSIONSMODELLER
+
+# Steg 1 – skapa dataset utan NA för variabler som används i modellerna
+
+
+data_complete <- na.omit(df[, c(
+  "charges",
+  "age",
+  "sex",
+  "bmi",
+  "smoker",
+  "children",
+  "history_risk",
+  "plan_type",
+  "chronic_condition",
+  "annual_checkups"
+)])
+
+# Modell 1
+m1 <- lm(charges ~ age + sex + bmi + smoker + children,
+         data = data_complete,
+         na.action = na.exclude)
+
+# Modell 2
+m2 <- lm(charges ~ age + sex + bmi + smoker + children +
+           history_risk + plan_type + chronic_condition + annual_checkups,
+         data = data_complete,
+         na.action = na.exclude)
+
+summary(m1)
+summary(m2)
+
+AIC(m1, m2)
+BIC(m1, m2)
+
+
+
+# Residualdiagnostik: 4-panel plot
+par(mfrow = c(2, 2))
+plot(m2)
+par(mfrow = c(1, 1))  # återställ layout
+
+shapiro.test(residuals(m2))
+
+
+library(lmtest)
+bptest(m2)
+
+
+library(car)
+vif(m2)
+
+
+plot(cooks.distance(m2), type="h", main="Cook's Distance")
+abline(h = 4/length(residuals(m2)), col="red", lty=2)
+
